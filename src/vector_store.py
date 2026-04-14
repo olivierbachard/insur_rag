@@ -3,9 +3,10 @@ import os
 from pathlib import Path
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 
 
 def fetch_documents(knowledge_base_path: Path):
@@ -35,10 +36,14 @@ def create_chunks(documents: list) -> list[Document]:
     return chunks
 
 
-def create_vector_store(knowledge_base_path: Path, db_path: Path):
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-
+def create_vector_store(
+    knowledge_base_path: Path, db_path: Path, embeddings: Embeddings, force_recreate: bool = True
+) -> VectorStore:
+    
     if os.path.exists(db_path):
+        if not force_recreate:
+            return Chroma(persist_directory=db_path, embedding_function=embeddings)
+        
         print("Deleting existing vector store.")
         Chroma(persist_directory=db_path, embedding_function=embeddings).delete_collection()
 
