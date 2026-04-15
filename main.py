@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 from src.rag_app import RAGApp
 from src.vector_store import create_vector_store
 import gradio as gr
@@ -37,16 +37,20 @@ def main():
     
     # llm = ChatHuggingFace(llm=model, verbose=False)
     
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-3.1-flash-lite-preview",
-        max_tokens=512,
-        timeout=None,
-        max_retries=2,
+    # llm = ChatGoogleGenerativeAI(
+    #     model="gemini-3.1-flash-lite-preview",
+    #     max_tokens=512,
+    #     timeout=None,
+    #     max_retries=2,
+    # )
+
+    llm = ChatOllama(
+        model="llama3.2", num_predict=512, validate_model_on_init=True
     )
 
     app = RAGApp(retriever=vector_store.as_retriever(), llm=llm)
 
-    gr.ChatInterface(fn=app.answer_question).launch()
+    gr.ChatInterface(fn=app.answer_question_with_text).launch()
 
 
 if __name__ == "__main__":

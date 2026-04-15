@@ -1,4 +1,5 @@
 
+from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage, convert_to_messages
 from langchain_core.vectorstores import VectorStoreRetriever
@@ -19,7 +20,11 @@ Context:
         self.retriever = retriever
         self.llm = llm
 
-    def answer_question(self, question: str, history: list[dict] = []) -> str:
+    def answer_question_with_text(self, question: str, history: list[dict] = []) -> str:
+        content, _ = self.answer_question(question, history)
+        return content
+
+    def answer_question(self, question: str, history: list[dict] = []) -> tuple[str, list[Document]]:
 
         # improve context retrieval by including the conversation history in the query to the vector store
         history_contents = "\n".join([
@@ -34,4 +39,4 @@ Context:
         messages.extend(convert_to_messages(history))
         messages.append(HumanMessage(content=question))
         response = self.llm.invoke(messages)
-        return response.content
+        return response.content, documents
